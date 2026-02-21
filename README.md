@@ -39,7 +39,7 @@ data "aws_ssm_parameter" "tagops_api_token" {
 
 module "tagops" {
   source    = "tagops/tagops/aws"
-  version   = "~> 1.0"
+  version   = "~> 0.1.0"
   api_token = data.aws_ssm_parameter.tagops_api_token.value
   # ...
 }
@@ -64,7 +64,7 @@ provider "aws" {
 
 module "tagops" {
   source    = "tagops/tagops/aws"
-  version   = "~> 1.0"
+  version   = "~> 0.1.0"
   api_token = data.aws_ssm_parameter.tagops_api_token.value
 
   default_tags = {
@@ -88,7 +88,7 @@ Use `module.tagops.tags["default_<resource_type>"]` to apply computed tags:
 ```hcl
 module "tagops" {
   source    = "tagops/tagops/aws"
-  version   = "~> 1.0"
+  version   = "~> 0.1.0"
   api_token = data.aws_ssm_parameter.tagops_api_token.value
 
   default_tags = {
@@ -126,7 +126,7 @@ Use `module.tagops.tags["<resource_key>"]` to apply computed tags:
 ```hcl
 module "tagops" {
   source    = "tagops/tagops/aws"
-  version   = "~> 1.0"
+  version   = "~> 0.1.0"
   api_token = data.aws_ssm_parameter.tagops_api_token.value
 
   default_tags = {
@@ -181,7 +181,7 @@ See the full example: [examples/ignore_tag_changes](examples/ignore_tag_changes)
 
 ### Multi AWS Providers (Multi-Region)
 
-When you manage resources across multiple AWS regions, create a separate TagOps module instance for each region. The module automatically detects the account ID and region from the AWS provider, so TagOps applies the correct region-specific rules to each set of resources.
+When you manage resources across multiple AWS regions or accounts, create a separate TagOps module instance for each region. The module automatically detects the account ID and region from the AWS provider, so TagOps applies the correct region-specific rules to each set of resources.
 
 Pass an aliased provider using the `providers` block:
 
@@ -202,7 +202,7 @@ provider "aws" {
 
 module "tagops" {
   source       = "tagops/tagops/aws"
-  version      = "~> 1.0"
+  version      = "~> 0.1.0"
   api_token    = data.aws_ssm_parameter.tagops_api_token.value
   default_tags = local.default_tags
   custom_resources = {
@@ -216,7 +216,7 @@ module "tagops" {
 
 module "tagops_us_east_1" {
   source       = "tagops/tagops/aws"
-  version      = "~> 1.0"
+  version      = "~> 0.1.0"
   providers = {
     aws = aws.us-east-1
   }
@@ -256,7 +256,7 @@ You can use both `default_resources` and `custom_resources` together. They are m
 ```hcl
 module "tagops" {
   source    = "tagops/tagops/aws"
-  version   = "~> 1.0"
+  version   = "~> 0.1.0"
   api_token = data.aws_ssm_parameter.tagops_api_token.value
 
   default_tags = {
