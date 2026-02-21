@@ -179,6 +179,76 @@ resource "aws_ssm_parameter" "foo" {
 
 See the full example: [examples/ignore_tag_changes](examples/ignore_tag_changes)
 
+### Multi AWS Providers (Multi-Region)
+
+When you manage resources across multiple AWS regions, create a separate TagOps module instance for each region. The module automatically detects the account ID and region from the AWS provider, so TagOps applies the correct region-specific rules to each set of resources.
+
+Pass an aliased provider using the `providers` block:
+
+```hcl
+provider "aws" {
+  default_tags {
+    tags = local.default_tags
+  }
+}
+
+provider "aws" {
+  alias  = "us-east-1"
+  region = "us-east-1"
+  default_tags {
+    tags = local.default_tags
+  }
+}
+
+module "tagops" {
+  source       = "tagops/tagops/aws"
+  version      = "~> 1.0"
+  api_token    = data.aws_ssm_parameter.tagops_api_token.value
+  default_tags = local.default_tags
+  custom_resources = {
+    foo = {
+      type = "aws_ssm_parameter"
+      name = "foo"
+      tags = { app = "test" }
+    }
+  }
+}
+
+module "tagops_us_east_1" {
+  source       = "tagops/tagops/aws"
+  version      = "~> 1.0"
+  providers = {
+    aws = aws.us-east-1
+  }
+  api_token    = data.aws_ssm_parameter.tagops_api_token.value
+  default_tags = local.default_tags
+  custom_resources = {
+    foo2 = {
+      type = "aws_ssm_parameter"
+      name = "foo2"
+      tags = { app = "test" }
+    }
+  }
+}
+
+resource "aws_ssm_parameter" "foo" {
+  name  = "foo"
+  type  = "String"
+  value = "bar"
+  tags  = merge({ app = "test" }, module.tagops.tags["foo"])
+}
+
+resource "aws_ssm_parameter" "foo2" {
+  provider = aws.us-east-1
+  name     = "foo2"
+  type     = "String"
+  value    = "bar2"
+  tags     = merge({ app = "test" }, module.tagops_us_east_1.tags["foo2"])
+}
+```
+
+See the full example: [examples/multi_aws_providers](examples/multi_aws_providers)
+
 ### Combined — Default and Custom Resources
 
 You can use both `default_resources` and `custom_resources` together. They are merged internally:
@@ -243,6 +313,7 @@ The module makes a fresh API request on every `plan`/`apply` (via `plantimestamp
 | [default_resources](examples/default_resources) | Tag all resources from a VPC module using `default_resources` |
 | [custom_resources](examples/custom_resources) | Tag specific S3 buckets with individual names and existing tags |
 | [ignore_tag_changes](examples/ignore_tag_changes) | Protect dynamic tags (`created-by`, `creation-date`) from Terraform drift |
+| [multi_aws_providers](examples/multi_aws_providers) | Tag resources across multiple AWS regions using aliased providers |
 
 ## Supported Resource Types
 
